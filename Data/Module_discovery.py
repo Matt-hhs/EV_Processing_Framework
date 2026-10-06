@@ -32,3 +32,24 @@ def check_folder_path():
         raise FileNotFoundError(f"No 'custom_modules' folder in: {base}")
 
     return folder
+
+
+def find_custom_modules():
+    allowed_suffixes = get_data_from_yaml("custom_module_suffixes")
+
+    if not allowed_suffixes:
+        print()
+
+    found = []
+    path = check_folder_path()
+
+    for file in path.rglob("*"):
+        if not file.is_file():
+            continue
+
+        if file.suffix.lower() not in allowed_suffixes:
+            continue
+
+        found.append(file)
+
+    return sorted(found)
