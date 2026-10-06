@@ -63,6 +63,14 @@ class ProcessStatusManager(cmd.Cmd):
         "Stop the running process."
         self.runner.stop()
 
+    def do_exit(self, arg):
+        "Stop the running process and exit framework."
+        if self.runner.is_alive():
+            self.runner.stop()
+        return True
+
+    do_EOF = do_exit
+
 
 def main():
     ProcessStatusManager().cmdloop()
