@@ -2,14 +2,11 @@ import yaml
 from pathlib import Path
 
 
-def get_custom_modules_path():
+def get_data_from_yaml(variable_name: str):
     with open("config.yaml", "r", encoding="utf-8") as file:
         data = yaml.safe_load(file) or {}
 
-    if "custom_module_path" in data:
-        return data["custom_module_path"]
-    else:
-        return None
+    return data.get(variable_name)
 
 
 def ask_custom_modules_path():
@@ -17,7 +14,7 @@ def ask_custom_modules_path():
 
 
 def check_folder_path():
-    path = get_custom_modules_path()
+    path = get_data_from_yaml("custom_module_path")
 
     if not path:
         path = ask_custom_modules_path()
@@ -34,9 +31,4 @@ def check_folder_path():
     if not folder.is_dir():
         raise FileNotFoundError(f"No 'custom_modules' folder in: {base}")
 
-
-    
-
-
-    
-
+    return folder
