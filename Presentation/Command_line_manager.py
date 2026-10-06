@@ -29,6 +29,15 @@ class ProcessRunner:
         self._running.set()
         print("Resumed.")
 
+    def stop(self):
+        self._stop.set()
+        self._running.set()
+
+        if self._thread:
+            # Block thread until self._thread has stopped
+            self._thread.join()
+        print("Stopped.")
+
 
 class ProcessStatusManager(cmd.Cmd):
     intro = "Running EV_Processing_Framework. For available commands, type help."
@@ -49,6 +58,10 @@ class ProcessStatusManager(cmd.Cmd):
     def do_resume(self, arg):
         "Resume a paused process."
         self.runner.resume()
+
+    def do_stop(self, arg):
+        "Stop the running process."
+        self.runner.stop()
 
 
 def main():
