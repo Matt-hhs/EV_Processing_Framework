@@ -21,6 +21,14 @@ class ProcessRunner:
         self._thread = threading.Thread(target=self._work, daemon=True)
         self._thread.start()
 
+    def pause(self):
+        self._running.clear()
+        print("Paused.")
+
+    def resume(self):
+        self._running.set()
+        print("Resumed.")
+
 
 class ProcessStatusManager(cmd.Cmd):
     intro = "Running EV_Processing_Framework. For available commands, type help."
@@ -33,6 +41,14 @@ class ProcessStatusManager(cmd.Cmd):
     def do_start(self, arg):
         "Start the process."
         self.runner.start
+
+    def do_pause(self, arg):
+            "Pause the current process."
+            self.runner.pause()
+    
+    def do_resume(self, arg):
+        "Resume a paused process."
+        self.runner.resume()
 
 
 def main():
