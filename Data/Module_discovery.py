@@ -11,6 +11,7 @@ class CustomModuleFinder:
 
 
     def ask_custom_modules_path(self):
+        # TODO
         print()
 
 
@@ -39,6 +40,7 @@ class CustomModuleFinder:
         allowed_suffixes = self.get_data_from_yaml("custom_module_suffixes")
 
         if not allowed_suffixes:
+            # TODO
             print()
 
         found = []
@@ -48,7 +50,7 @@ class CustomModuleFinder:
             if not file.is_file():
                 continue
 
-            if file.suffix.lower() not in allowed_suffixes:
+            if file.suffix.lower() in allowed_suffixes:
                 continue
 
             found.append(file)
