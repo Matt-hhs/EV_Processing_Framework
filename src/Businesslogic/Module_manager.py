@@ -1,5 +1,5 @@
-from Data import Module_registrar
-from Businesslogic.Registry import runtime_memory
+from src.Data import Module_registrar
+from src.Businesslogic.Registry import runtime_memory
 
 
 class GetFromRegistry:

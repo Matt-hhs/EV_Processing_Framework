@@ -5,8 +5,8 @@
 
 4. Communicate with module_manager that the module_discovery needs a filepath from user
 """
-from Data import Module_discovery
-from Businesslogic.Registry import runtime_memory
+from src.Data import Module_discovery
+from src.Businesslogic.Registry import runtime_memory
 from pathlib import Path
 
 
