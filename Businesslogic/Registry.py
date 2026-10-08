@@ -8,6 +8,11 @@ class RuntimeMemory:
         }
 
 
+    def get_entry_from_registry(self, registry_name: str):
+        if registry_name in self.registry:
+            return self.registry.get(registry_name)
+
+
     def add_entry_to_registry(self, item: str, registry_name: str):
         wanted_registry = self.registry.get(registry_name)
 
@@ -19,10 +24,13 @@ class RuntimeMemory:
 
 
     def clear_registry(self, registry_name: str):
-        registry = self.registries.get(registry_name)
+        registry = self.registry.get(registry_name)
 
         if registry is None:
             print("Registry not found")
             return
 
         registry.clear()
+
+
+runtime_memory = RuntimeMemory()
