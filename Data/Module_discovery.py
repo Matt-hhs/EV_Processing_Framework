@@ -50,7 +50,7 @@ class CustomModuleFinder:
             if not file.is_file():
                 continue
 
-            if file.suffix.lower() in allowed_suffixes:
+            if file.suffix.lower() not in allowed_suffixes:
                 continue
 
             found.append(file)
