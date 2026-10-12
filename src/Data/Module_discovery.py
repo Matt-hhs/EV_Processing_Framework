@@ -3,8 +3,8 @@ from pathlib import Path
 
 
 class CustomModuleFinder:
-    def get_data_from_yaml(self, variable_name: str):
-        with open("config.yaml", "r", encoding="utf-8") as file:
+    def get_data_from_yaml(self, yaml_path: str, variable_name: str):
+        with open(yaml_path, "r", encoding="utf-8") as file:
             data = yaml.safe_load(file) or {}
 
         return data.get(variable_name)
@@ -16,7 +16,7 @@ class CustomModuleFinder:
 
 
     def check_folder_path(self):
-        path = self.get_data_from_yaml("custom_module_path")
+        path = self.get_data_from_yaml("config.yaml", "custom_module_path")
 
         if not path:
             path = self.ask_custom_modules_path()
@@ -37,7 +37,7 @@ class CustomModuleFinder:
 
 
     def find_custom_modules(self):
-        allowed_suffixes = self.get_data_from_yaml("custom_module_suffixes")
+        allowed_suffixes = self.get_data_from_yaml("config.yaml", "custom_module_suffixes")
 
         if not allowed_suffixes:
             # TODO
