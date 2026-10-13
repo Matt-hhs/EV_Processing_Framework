@@ -12,8 +12,10 @@ class RunCustomModule:
         self.process = None
         self.thread = None
 
+
     def is_alive(self):
         return self.thread is not None and self.thread.is_alive()
+
 
     def start(self, module_name):
         if self.is_alive():
@@ -26,6 +28,7 @@ class RunCustomModule:
             daemon=True
         )
         self.thread.start()
+
 
     def run_module(self, module_name):
         module_paths = self.get_modules.get_custom_module_paths_from_registry()
@@ -45,8 +48,6 @@ class RunCustomModule:
 
         print(f"Module not found: {module_name}")
 
-    def _module_is_running(self):
-        return self.process is not None and self.process.poll() is None
 
     def pause(self):
         if not self._module_is_running():
@@ -56,6 +57,7 @@ class RunCustomModule:
         psutil.Process(self.process.pid).suspend()
         print("Paused.")
 
+
     def resume(self):
         if not self._module_is_running():
             print("No module is running.")
@@ -63,6 +65,7 @@ class RunCustomModule:
 
         psutil.Process(self.process.pid).resume()
         print("Resumed.")
+
 
     def stop(self):
         if not self._module_is_running():
@@ -73,6 +76,7 @@ class RunCustomModule:
 
         process.resume()
         process.terminate()
+
 
     def _module_is_running(self):
         return self.process is not None and self.process.poll() is None
