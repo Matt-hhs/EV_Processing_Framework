@@ -1,49 +1,81 @@
 from src.Businesslogic import Module_manager
 import cmd
 import threading
+import psutil
+import sys
+import subprocess
 
 
-class ProcessRunner:
+class RunCustomModule:
     def __init__(self):
-        self._thread = None
-
-        # .set() = True | .wait() = block thread until True | .clear() = False
-        self._stop = threading.Event()
-        self._running = threading.Event()
-
+        self.get_modules = Module_manager.GetFromRegistry()
+        self.process = None
+        self.thread = None
 
     def is_alive(self):
-        return self._thread is not None and self._thread.is_alive()
-    
+        return self.thread is not None and self.thread.is_alive()
 
-    def start(self):
+    def start(self, module_name):
         if self.is_alive():
+            print("A module is already running.")
             return
-        
-        self._stop.clear()
-        self._running.set()
-        self._thread = threading.Thread(target=self._work, daemon=True)
-        self._thread.start()
 
+        self.thread = threading.Thread(
+            target=self.run_module,
+            args=(module_name,),
+            daemon=True
+        )
+        self.thread.start()
+
+    def run_module(self, module_name):
+        module_paths = self.get_modules.get_custom_module_paths_from_registry()
+
+        for module_path in module_paths:
+            if module_path.name == module_name:
+                self.process = subprocess.Popen(
+                    [sys.executable, str(module_path)]
+                )
+
+                try:
+                    self.process.wait()
+                finally:
+                    self.process = None
+
+                return
+
+        print(f"Module not found: {module_name}")
+
+    def _module_is_running(self):
+        return self.process is not None and self.process.poll() is None
 
     def pause(self):
-        self._running.clear()
+        if not self._module_is_running():
+            print("No module is running.")
+            return
+
+        psutil.Process(self.process.pid).suspend()
         print("Paused.")
 
-
     def resume(self):
-        self._running.set()
+        if not self._module_is_running():
+            print("No module is running.")
+            return
+
+        psutil.Process(self.process.pid).resume()
         print("Resumed.")
 
-
     def stop(self):
-        self._stop.set()
-        self._running.set()
+        if not self._module_is_running():
+            print("No module is running.")
+            return
 
-        if self._thread:
-            # Block thread until self._thread has stopped
-            self._thread.join()
-        print("Stopped.")
+        process = psutil.Process(self.process.pid)
+
+        process.resume()
+        process.terminate()
+
+    def _module_is_running(self):
+        return self.process is not None and self.process.poll() is None
 
 
 class ProcessStatusManager(cmd.Cmd):
@@ -52,34 +84,29 @@ class ProcessStatusManager(cmd.Cmd):
 
     def __init__(self):
         super().__init__()
-        self.runner = ProcessRunner()
         self.get_from_registry = Module_manager.GetFromRegistry()
-
-
-    def do_start(self, arg):
-        "Start the process."
-        self.runner.start
+        self.run_custom_module = RunCustomModule()
 
 
     def do_pause(self, arg):
         "Pause the current process."
-        self.runner.pause()
+        self.run_custom_module.pause()
 
     
     def do_resume(self, arg):
         "Resume a paused process."
-        self.runner.resume()
+        self.run_custom_module.resume()
 
 
     def do_stop(self, arg):
         "Stop the running process."
-        self.runner.stop()
+        self.run_custom_module.stop()
 
 
     def do_exit(self, arg):
         "Stop the running process and exit framework."
-        if self.runner.is_alive():
-            self.runner.stop()
+        if self.run_custom_module.is_alive():
+            self.run_custom_module.stop()
         return True
 
     do_EOF = do_exit
@@ -97,7 +124,17 @@ class ProcessStatusManager(cmd.Cmd):
         for module in custom_modules:
             print(f"- {module}")
 
-    
+
+    def do_run_module(self, arg):
+        """Run a custom module located in the custom_modules folder by typing: run_module <module_name>"""
+        module_name = arg.strip()
+
+        if not module_name:
+            return
+
+        self.run_custom_module.start(
+            module_name
+        )
 
 
 def main():
