@@ -1,4 +1,5 @@
 from src.Businesslogic import Module_manager
+from src.Businesslogic import Workflow_manager
 import cmd
 import threading
 import psutil
@@ -90,6 +91,7 @@ class ProcessStatusManager(cmd.Cmd):
         super().__init__()
         self.get_from_registry = Module_manager.GetFromRegistry()
         self.run_custom_module = RunCustomModule()
+        self.manage_workflow = Workflow_manager.ManageWorkflow()
 
 
     def do_pause(self, arg):
@@ -139,6 +141,16 @@ class ProcessStatusManager(cmd.Cmd):
         self.run_custom_module.start(
             module_name
         )
+
+
+    def do_create_workflow(self, arg):
+        """Create a new workflow with custom name by typing: create_workflow <workflow_name>"""
+        workflow_name = arg.strip()
+
+        if not workflow_name:
+            return
+
+        self.manage_workflow.create_workflow(workflow_name)
 
 
 def main():
