@@ -30,7 +30,6 @@ class RunCustomModule:
         module_paths = self.get_modules.get_custom_module_paths_from_registry()
 
         for module in module_paths:
-            if module.endswith(custom_module_name):
-                subprocess.run(
-                    [sys.executable, module]
-                )
+            if module.name == custom_module_name:
+                subprocess.run([sys.executable, module])
+                return
