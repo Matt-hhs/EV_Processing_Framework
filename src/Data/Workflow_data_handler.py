@@ -13,6 +13,19 @@ class HandleData:
     def get_workflow_path(self, workflow_name):
         return self.get_workflow_folder() / f"{workflow_name}.json"
 
+
+    def open_workflow(self, filename):
+        path = self.get_workflow_path(filename)
+
+        if not path.exists():
+            raise FileNotFoundError(f"Workflow file {filename} does not exist")
+
+        with open(path, "r", encoding="utf-8") as file:
+            self.workflow = json.load(file)
+
+        self.workflow_name = filename
+
+
     def write_in_workflow(self, workflow_name, data):
         with workflow_name.open("w", encoding="utf-8") as file:
             json.dump(data, file, indent=4)
