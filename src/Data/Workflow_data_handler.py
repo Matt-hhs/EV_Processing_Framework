@@ -3,6 +3,11 @@ from pathlib import Path
 
 
 class HandleData:
+    def __init__(self):
+        self.workflow = None
+        self.workflow_name = None
+
+
     def get_workflow_folder(self):
         current_file = Path(__file__).resolve()
 
@@ -58,3 +63,4 @@ class HandleData:
         self.write_in_workflow(workflow_name, workflow_creation_data)
 
 
+data_handler = HandleData()
