@@ -134,6 +134,15 @@ class ProcessStatusManager(cmd.Cmd):
 
         self.manage_workflow.create_workflow(workflow_name)
 
+    def do_select_workflow(self, arg):
+        """Select a the workflow you want to work in by typing: select_workflow <workflow_name>"""
+        workflow_name = arg.strip()
+
+        if not workflow_name:
+            return
+
+        self.manage_workflow.select_workflow(workflow_name)
+
 
 def main():
     ProcessStatusManager().cmdloop()

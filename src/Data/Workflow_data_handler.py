@@ -10,6 +10,9 @@ class HandleData:
         return project_folder / "workflows"
 
 
+    def get_workflow_path(self, workflow_name):
+        return self.get_workflow_folder() / f"{workflow_name}.json"
+
     def write_in_workflow(self, workflow_name, data):
         with workflow_name.open("w", encoding="utf-8") as file:
             json.dump(data, file, indent=4)
@@ -27,9 +30,18 @@ class HandleData:
 
 
     def workflow_creation(self, workflow_name):
-        workflow = workflow_name + ".json"
+        if self.get_workflow_path(workflow_name).exists():
+            raise FileExistsError(f"Workflow {workflow_name} already exists")
 
-        file_path = self.get_workflow_folder() / workflow
-        workflow_creation_data = {}
+        workflow_creation_data = {
+            "current_step": "root",
+            "root": {
+                "id": "root",
+                "module": None,
+                "children": []
+            }
+        }
 
-        self.write_in_workflow(file_path, workflow_creation_data)
+        self.write_in_workflow(workflow_name, workflow_creation_data)
+
+
