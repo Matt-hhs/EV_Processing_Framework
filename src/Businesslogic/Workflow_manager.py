@@ -1,4 +1,4 @@
-from src.Data import Workflow_data_handler
+from src.Data.Workflow_data_handler import data_handler, step_manager
 from pathlib import Path
 
 

@@ -66,4 +66,9 @@ class HandleData:
         self.write_in_workflow(workflow_name, workflow_creation_data)
 
 
+class ManageSteps:
+    def __init__(self, workflow_manager):
+        self.workflow_manager = workflow_manager
+
 data_handler = HandleData()
+step_manager = ManageSteps(data_handler)
