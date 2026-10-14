@@ -25,5 +25,10 @@ class ManageWorkflow:
         else:
             data_handler.workflow_creation(workflow_name)
 
+
+    def create_step(self):
+        step_manager.create_step()
+
+
     def select_workflow(self, filename):
         data_handler.open_workflow(filename)

@@ -70,5 +70,54 @@ class ManageSteps:
     def __init__(self, workflow_manager):
         self.workflow_manager = workflow_manager
 
+
+    def get_workflow(self):
+        return self.workflow_manager.workflow
+    def create_step(self):
+        workflow = self.get_workflow()
+
+        if workflow is None:
+            raise ValueError(f"No workflow selected! Select a workflow first by typing: select_workflow <workflow_name>")
+        
+        parent = self.find_step(workflow["current_step"])
+
+        if parent is None:
+            raise ValueError(f"Current step {workflow['current_step']} does not exist")
+
+        number = len(parent["children"]) + 1
+
+        if parent["id"] == "root":
+            step_id = str(number)
+        else:
+            step_id = parent["id"] + "." + str(number)
+
+        parent["children"].append({
+            "id": step_id,
+            "module": None,
+            "status": "Open",
+            "children": []
+        })
+
+        workflow["current_step"] = step_id
+
+        self.workflow_manager.write_in_workflow(self.workflow_manager.workflow_name, workflow)
+
+    def find_step(self, step_id):
+        node = self.get_workflow()["root"]
+
+        if step_id == "root":
+            return node
+
+        for number in step_id.split("."):
+            index = int(number) - 1
+
+            if not 0 <= index and index < len(node["children"]):
+                return None
+
+            node = node["children"][index]
+
+        return node
+
+
 data_handler = HandleData()
 step_manager = ManageSteps(data_handler)

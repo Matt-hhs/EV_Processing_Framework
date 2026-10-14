@@ -134,6 +134,11 @@ class ProcessStatusManager(cmd.Cmd):
 
         self.manage_workflow.create_workflow(workflow_name)
 
+    def do_create_step(self, arg):
+        """Create a new step continueing from your current step inside the current workflow"""
+        self.manage_workflow.create_step()
+
+
     def do_select_workflow(self, arg):
         """Select a the workflow you want to work in by typing: select_workflow <workflow_name>"""
         workflow_name = arg.strip()
