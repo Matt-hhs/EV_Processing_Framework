@@ -23,7 +23,7 @@ class ManageWorkflow:
         if self.check_workflow_name(workflow_name):
             print("Workflow name already exists")
         else:
-            self.data_handler.workflow_creation(workflow_name)
+            data_handler.workflow_creation(workflow_name)
 
     def select_workflow(self, filename):
         data_handler.open_workflow(filename)
