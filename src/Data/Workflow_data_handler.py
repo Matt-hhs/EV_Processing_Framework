@@ -102,6 +102,19 @@ class ManageSteps:
 
         self.workflow_manager.write_in_workflow(self.workflow_manager.workflow_name, workflow)
 
+    def set_step_module(self, module_name):
+        workflow = self.get_workflow()
+        step_id = workflow["current_step"]
+        step = self.find_step(step_id)
+
+        if step is None:
+            raise ValueError(f"Step {step_id} does not exist")
+
+        step["module"] = module_name
+
+        self.workflow_manager.write_in_workflow(self.workflow_manager.workflow_name, workflow)
+
+
     def find_step(self, step_id):
         node = self.get_workflow()["root"]
 

@@ -31,6 +31,7 @@ class RunCustomModule:
 
         for module_path in module_paths:
             if module_path.name == module_name:
+                step_manager.set_step_module(module_path.name)
 
                 self.process = subprocess.Popen([sys.executable, str(module_path)])
 
