@@ -10,6 +10,7 @@ import subprocess
 class RunCustomModule:
     def __init__(self):
         self.get_modules = Module_manager.GetFromRegistry()
+        self.run_modules = Module_manager.RunCustomModule()
         self.process = None
         self.thread = None
 
@@ -24,30 +25,11 @@ class RunCustomModule:
             return
 
         self.thread = threading.Thread(
-            target=self.run_module,
+            target=self.run_modules.run_module,
             args=(module_name,),
             daemon=True
         )
         self.thread.start()
-
-
-    def run_module(self, module_name):
-        module_paths = self.get_modules.get_custom_module_paths_from_registry()
-
-        for module_path in module_paths:
-            if module_path.name == module_name:
-                self.process = subprocess.Popen(
-                    [sys.executable, str(module_path)]
-                )
-
-                try:
-                    self.process.wait()
-                finally:
-                    self.process = None
-
-                return
-
-        print(f"Module not found: {module_name}")
 
 
     def pause(self):

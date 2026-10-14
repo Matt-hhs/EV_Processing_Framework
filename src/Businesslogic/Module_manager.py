@@ -26,10 +26,19 @@ class RunCustomModule:
         self.get_modules = GetFromRegistry()
 
 
-    def run_module(self, custom_module_name):
+    def run_module(self, module_name):
         module_paths = self.get_modules.get_custom_module_paths_from_registry()
 
-        for module in module_paths:
-            if module.name == custom_module_name:
-                subprocess.run([sys.executable, module])
+        for module_path in module_paths:
+            if module_path.name == module_name:
+
+                self.process = subprocess.Popen([sys.executable, str(module_path)])
+
+                try:
+                    returncode = self.process.wait()
+                finally:
+                    self.process = None
+
                 return
+
+        print(f"Module not found: {module_name}")
