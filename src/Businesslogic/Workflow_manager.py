@@ -3,10 +3,6 @@ from pathlib import Path
 
 
 class ManageWorkflow:
-    def __init__(self):
-        self.data_handler = Workflow_data_handler.HandleData()
-        
-
     def check_workflow_name(self, workflow_name):
         workflows = self.data_handler.get_workflows()
 
