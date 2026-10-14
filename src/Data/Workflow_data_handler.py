@@ -102,6 +102,27 @@ class ManageSteps:
 
         self.workflow_manager.write_in_workflow(self.workflow_manager.workflow_name, workflow)
 
+
+    def set_step_status(self, status):
+        statuses = ["Success", "Processing", "Open", "Failed"]
+
+        if status not in statuses:
+            raise ValueError(f"Status needs to be one of {statuses}, {status} is not in there!")
+        
+        workflow = self.get_workflow()
+        print(f"selected workflow: {workflow}")
+        step_id = workflow["current_step"]
+        step = self.find_step(step_id)
+        print(f"step id is {step_id}")
+
+        if step is None:
+            raise ValueError(f"Step {step_id} does not exist")
+
+        step["status"] = status
+
+        self.workflow_manager.write_in_workflow(self.workflow_manager.workflow_name, workflow)
+
+
     def set_step_module(self, module_name):
         workflow = self.get_workflow()
         step_id = workflow["current_step"]
