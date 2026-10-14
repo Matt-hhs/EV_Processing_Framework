@@ -32,8 +32,11 @@ class HandleData:
 
 
     def write_in_workflow(self, workflow_name, data):
-        with workflow_name.open("w", encoding="utf-8") as file:
+        with open(self.get_workflow_path(workflow_name), "w", encoding="utf-8") as file:
             json.dump(data, file, indent=4)
+
+        self.workflow = data
+        self.workflow_name = workflow_name
 
 
     def get_workflows(self):
