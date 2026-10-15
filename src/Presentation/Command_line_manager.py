@@ -3,6 +3,7 @@ from src.Businesslogic.Module_manager import GetFromRegistry
 from src.Businesslogic.Workflow_manager import ManageWorkflow
 
 import cmd
+import shlex
 
 
 class ProcessStatusManager(cmd.Cmd):
@@ -54,11 +55,29 @@ class ProcessStatusManager(cmd.Cmd):
 
 
     def do_run_module(self, arg):
-        """Run a custom module located in the custom_modules folder by typing: run_module <module_name>"""
-        module_name = arg.strip()
+        """Run a custom module located in the custom_modules folder by typing: run_module <module_name> [<parameter>=<value> ...]"""
+        try:
+            parts = shlex.split(arg)
+        except ValueError as error:
+            print(f"Invalid input: {error}")
+            return
 
-        if module_name:
-            self.run_custom_module.start(module_name)
+        if not parts:
+            return
+
+        module_name = parts[0]
+        parameters = {}
+
+        for part in parts[1:]:
+            name, separator, value = part.partition("=")
+
+            if not separator or not name:
+                print(f"Invalid parameter '{part}', use <parameter>=<value>.")
+                return
+
+            parameters[name] = value
+
+        self.run_custom_module.start(module_name, parameters)
         
 
     def do_create_workflow(self, arg):
