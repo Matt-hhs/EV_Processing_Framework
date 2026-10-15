@@ -25,6 +25,28 @@ class GetFromRegistry:
         return runtime_memory.get_entry_from_registry("custom_modules")
 
 
+    def get_duplicate_module_names_from_registry(self):
+        module_paths = self.get_custom_module_paths_from_registry()
+        paths_per_name = {}
+
+        for module_path in module_paths:
+            paths_per_name.setdefault(module_path.stem, []).append(module_path)
+
+        return {name: paths for name, paths in paths_per_name.items() if len(paths) > 1}
+
+
+    def report_duplicate_modules(self):
+        duplicates = self.get_duplicate_module_names_from_registry()
+
+        for name, paths in duplicates.items():
+            print(f"Duplicate module name '{name}':")
+
+            for path in paths:
+                print(f"  - {path}")
+
+        return bool(duplicates)
+
+
 class RunCustomModule:
     def __init__(self):
         self.get_modules = GetFromRegistry()
