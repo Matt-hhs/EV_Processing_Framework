@@ -10,6 +10,15 @@ class CustomModuleFinder:
         return data.get(variable_name)
 
 
+    def get_module_config(self, module_path, key):
+        yaml_path = Path(module_path).with_suffix(".yaml")
+
+        if not yaml_path.is_file():
+            return None
+
+        return self.get_data_from_yaml(str(yaml_path), key)
+
+
     def ask_custom_modules_path(self):
         # TODO
         print()
