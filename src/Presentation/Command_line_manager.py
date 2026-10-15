@@ -1,79 +1,20 @@
-from src.Businesslogic import Module_manager
-from src.Businesslogic import Workflow_manager
+from src.Businesslogic.Module_manager import RunCustomModule
+from src.Businesslogic.Module_manager import GetFromRegistry
+from src.Businesslogic.Workflow_manager import ManageWorkflow
+
 import cmd
-import threading
-import psutil
-import sys
-import subprocess
-
-
-class RunCustomModule:
-    def __init__(self):
-        self.get_modules = Module_manager.GetFromRegistry()
-        self.run_modules = Module_manager.RunCustomModule()
-        self.process = None
-        self.thread = None
-
-
-    def is_alive(self):
-        return self.thread is not None and self.thread.is_alive()
-
-
-    def start(self, module_name):
-        if self.is_alive():
-            print("A module is already running.")
-            return
-
-        self.thread = threading.Thread(
-            target=self.run_modules.run_module,
-            args=(module_name,),
-            daemon=True
-        )
-        self.thread.start()
-
-
-    def pause(self):
-        if not self._module_is_running():
-            print("No module is running.")
-            return
-
-        psutil.Process(self.process.pid).suspend()
-        print("Paused.")
-
-
-    def resume(self):
-        if not self._module_is_running():
-            print("No module is running.")
-            return
-
-        psutil.Process(self.process.pid).resume()
-        print("Resumed.")
-
-
-    def stop(self):
-        if not self._module_is_running():
-            print("No module is running.")
-            return
-
-        process = psutil.Process(self.process.pid)
-
-        process.resume()
-        process.terminate()
-
-
-    def _module_is_running(self):
-        return self.process is not None and self.process.poll() is None
 
 
 class ProcessStatusManager(cmd.Cmd):
     intro = "Running EV_Processing_Framework. For available commands, type help."
     prompt = "> "
 
-    def __init__(self):
+
+    def __init__(self, get_from_registry, run_custom_module, manage_workflow):
         super().__init__()
-        self.get_from_registry = Module_manager.GetFromRegistry()
-        self.run_custom_module = RunCustomModule()
-        self.manage_workflow = Workflow_manager.ManageWorkflow()
+        self.get_from_registry = get_from_registry
+        self.run_custom_module = run_custom_module
+        self.manage_workflow = manage_workflow
 
 
     def do_pause(self, arg):
@@ -108,7 +49,6 @@ class ProcessStatusManager(cmd.Cmd):
             print("No modules found!")
             return
 
-        print("Custom modules: ")
         for module in custom_modules:
             print(f"- {module}")
 
@@ -117,13 +57,9 @@ class ProcessStatusManager(cmd.Cmd):
         """Run a custom module located in the custom_modules folder by typing: run_module <module_name>"""
         module_name = arg.strip()
 
-        if not module_name:
-            return
-
-        self.run_custom_module.start(
-            module_name
-        )
-
+        if module_name:
+            self.run_custom_module.start(module_name)
+        
 
     def do_create_workflow(self, arg):
         """Create a new workflow with custom name by typing: create_workflow <workflow_name>"""
@@ -152,7 +88,11 @@ class ProcessStatusManager(cmd.Cmd):
 
 
 def main():
-    ProcessStatusManager().cmdloop()
+    run_custom_module = RunCustomModule()
+    manage_workflow = ManageWorkflow()
+    get_from_registry = GetFromRegistry()
+
+    ProcessStatusManager(get_from_registry, run_custom_module, manage_workflow).cmdloop()
 
 if __name__ == "__main__":
     main()

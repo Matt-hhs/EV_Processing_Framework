@@ -1,8 +1,11 @@
 from src.Data import Module_registrar
 from src.Businesslogic.Registry import runtime_memory
 from src.Data.Workflow_data_handler import data_handler, step_manager
+
 import sys
 import subprocess
+import threading
+import psutil
 
 
 class GetFromRegistry:
@@ -25,6 +28,25 @@ class GetFromRegistry:
 class RunCustomModule:
     def __init__(self):
         self.get_modules = GetFromRegistry()
+        self.process = None
+        self.thread = None
+
+
+    def is_alive(self):
+        return self.thread is not None and self.thread.is_alive()
+
+
+    def start(self, module_name):
+        if self.is_alive():
+            print("A module is already running.")
+            return
+
+        self.thread = threading.Thread(
+            target=self.run_module,
+            args=(module_name,),
+            daemon=True
+        )
+        self.thread.start()
 
 
     def run_module(self, module_name):
@@ -50,3 +72,36 @@ class RunCustomModule:
                 return
 
         print(f"Module not found: {module_name}")
+
+
+    def pause(self):
+        if not self.module_is_running():
+            print("No module is running.")
+            return
+
+        psutil.Process(self.process.pid).suspend()
+        print("Paused.")
+
+
+    def resume(self):
+        if not self.module_is_running():
+            print("No module is running.")
+            return
+
+        psutil.Process(self.process.pid).resume()
+        print("Resumed.")
+
+
+    def stop(self):
+        if not self.module_is_running():
+            print("No module is running.")
+            return
+
+        process = psutil.Process(self.process.pid)
+
+        process.resume()
+        process.terminate()
+
+
+    def module_is_running(self):
+        return self.process is not None and self.process.poll() is None
