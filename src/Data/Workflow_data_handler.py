@@ -73,6 +73,8 @@ class ManageSteps:
 
     def get_workflow(self):
         return self.workflow_manager.workflow
+
+    
     def create_step(self):
         workflow = self.get_workflow()
 
@@ -134,6 +136,30 @@ class ManageSteps:
         step["module"] = module_name
 
         self.workflow_manager.write_in_workflow(self.workflow_manager.workflow_name, workflow)
+
+
+    def set_step_output_type(self, output_type):
+        workflow = self.get_workflow()
+        step = self.find_step(workflow["current_step"])
+
+        if step is None:
+            raise ValueError(f"Step {workflow['current_step']} does not exist")
+
+        step["output_type"] = output_type
+
+        self.workflow_manager.write_in_workflow(self.workflow_manager.workflow_name, workflow)
+
+
+    def get_parent_output_type(self):
+        workflow = self.get_workflow()
+        step_id = workflow["current_step"]
+
+        if "." in step_id:
+            parent = self.find_step(step_id.rsplit(".", 1)[0])
+        else:
+            parent = self.find_step("root")
+
+        return parent.get("output_type")
 
 
     def find_step(self, step_id):
