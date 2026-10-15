@@ -53,9 +53,16 @@ class ProcessStatusManager(cmd.Cmd):
         for module in custom_modules:
             print(f"- {module}")
 
+        if self.get_from_registry.report_duplicate_modules():
+            print("Rename or remove the duplicates before running modules.")
+
 
     def do_run_module(self, arg):
         """Run a custom module located in the custom_modules folder by typing: run_module <module_name> [<parameter>=<value> ...]"""
+        if self.get_from_registry.report_duplicate_modules():
+            print("Modules can't be run until the duplicates are renamed or removed.")
+            return
+
         try:
             parts = shlex.split(arg)
         except ValueError as error:
@@ -87,13 +94,14 @@ class ProcessStatusManager(cmd.Cmd):
         if not workflow_name:
             return
 
-        self.manage_workflow.create_workflow(workflow_name)
-        self.manage_workflow.select_workflow(workflow_name)
+        print(self.manage_workflow.create_workflow(workflow_name))
+        print(self.manage_workflow.select_workflow(workflow_name))
 
 
     def do_create_step(self, arg):
         """Create a new step continueing from your current step inside the current workflow"""
-        self.manage_workflow.create_step()
+        message = self.manage_workflow.create_step()
+        print(message)
 
 
     def do_select_workflow(self, arg):
@@ -103,7 +111,7 @@ class ProcessStatusManager(cmd.Cmd):
         if not workflow_name:
             return
 
-        self.manage_workflow.select_workflow(workflow_name)
+        print(self.manage_workflow.select_workflow(workflow_name))
 
 
 def main():

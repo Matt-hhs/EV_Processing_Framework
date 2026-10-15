@@ -29,6 +29,7 @@ class HandleData:
             self.workflow = json.load(file)
 
         self.workflow_name = filename
+        return f"{filename} is now selected!"
 
 
     def write_in_workflow(self, workflow_name, data):
@@ -65,6 +66,8 @@ class HandleData:
 
         self.write_in_workflow(workflow_name, workflow_creation_data)
 
+        return f"Successfully created {workflow_name}"
+
 
 class ManageSteps:
     def __init__(self, workflow_manager):
@@ -79,12 +82,12 @@ class ManageSteps:
         workflow = self.get_workflow()
 
         if workflow is None:
-            raise ValueError(f"No workflow selected! Select a workflow first by typing: select_workflow <workflow_name>")
+            return "No workflow selected. Try selecting a workflow first before creating a step!"
         
         parent = self.find_step(workflow["current_step"])
 
         if parent is None:
-            raise ValueError(f"Current step {workflow['current_step']} does not exist")
+            return "No parent step found."
 
         number = len(parent["children"]) + 1
 
@@ -103,6 +106,8 @@ class ManageSteps:
         workflow["current_step"] = step_id
 
         self.workflow_manager.write_in_workflow(self.workflow_manager.workflow_name, workflow)
+
+        return "Step created."
 
 
     def set_step_status(self, status):

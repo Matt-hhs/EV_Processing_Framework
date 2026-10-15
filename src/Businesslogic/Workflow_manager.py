@@ -22,14 +22,14 @@ class ManageWorkflow:
 
     def create_workflow(self, workflow_name):
         if self.check_workflow_name(workflow_name):
-            print("Workflow name already exists")
+            return "Workflow name already exists"
         else:
-            data_handler.workflow_creation(workflow_name)
+            return data_handler.workflow_creation(workflow_name)
 
 
     def create_step(self):
-        step_manager.create_step()
+        return step_manager.create_step()
 
 
     def select_workflow(self, filename):
-        data_handler.open_workflow(filename)
+        return data_handler.open_workflow(filename)
