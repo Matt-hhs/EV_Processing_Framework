@@ -76,5 +76,51 @@ class TestGetDataFromYaml(unittest.TestCase):
             CustomModuleFinder().get_data_from_yaml(yaml_path, "key")
 
 
+class TestGetModuleConfig(unittest.TestCase):
+    def make_config(self, yaml_text):
+        fp = tempfile.NamedTemporaryFile("w", suffix=".yaml", delete=False, encoding="utf-8")
+
+        self.addCleanup(os.remove, fp.name)
+        fp.write(yaml_text)
+        fp.close()
+        return fp.name
+
+
+    def test_returns_value_from_yaml(self):
+        yaml_path = self.make_config("number: 1")
+        module_path = os.path.splitext(yaml_path)[0] + ".py"
+
+        result = CustomModuleFinder().get_module_config(module_path, "number")
+
+        self.assertEqual(result, 1)
+
+
+    def test_returns_none_when_yaml_is_missing(self):
+        module_path = "/tmp/random_script.py"
+
+        result = CustomModuleFinder().get_module_config(module_path, "number")
+
+        self.assertIsNone(result)
+
+
+    def test_returns_none_when_variable_is_missing(self):
+        yaml_path = self.make_config("decimal: 1")
+        module_path = os.path.splitext(yaml_path)[0] + ".py"
+
+        result = CustomModuleFinder().get_module_config(module_path, "number")
+
+        self.assertIsNone(result)
+
+
+    def test_returns_none_when_yaml_is_empty(self):
+        yaml_path = self.make_config("")
+        module_path = os.path.splitext(yaml_path)[0] + ".py"
+
+        result = CustomModuleFinder().get_module_config(module_path, "number")
+
+        self.assertIsNone(result)
+
+
+
 if __name__ == '__main__':
     unittest.main()
