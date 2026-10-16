@@ -79,6 +79,16 @@ class TestGetDataFromYaml(unittest.TestCase):
             CustomModuleFinder().get_data_from_yaml(yaml_path, "key")
 
 
+    def test_invalid_syntax_in_config(self):
+        yaml_path = self.make_config("key 1")
+
+        error_message = f"Invalid configuration in {yaml_path}\nThis is most likely a cause of invalid syntax or structure"
+
+        with self.assertRaisesRegex(ValueError, re.escape(error_message)):
+            CustomModuleFinder().get_data_from_yaml(yaml_path, "key")
+            
+
+
 class TestGetModuleConfig(unittest.TestCase):
     def make_config(self, yaml_text):
         fp = tempfile.NamedTemporaryFile("w", suffix=".yaml", delete=False, encoding="utf-8")
