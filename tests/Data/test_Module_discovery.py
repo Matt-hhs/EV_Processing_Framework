@@ -1,7 +1,10 @@
 import unittest
 import tempfile
 import os
+import re
 import yaml
+from pathlib import Path
+from unittest.mock import patch
 
 from src.Data.Module_discovery import CustomModuleFinder
 
@@ -119,6 +122,114 @@ class TestGetModuleConfig(unittest.TestCase):
         result = CustomModuleFinder().get_module_config(module_path, "number")
 
         self.assertIsNone(result)
+
+
+class TestCheckFolderPath(unittest.TestCase):
+    def setUp(self):
+        temp_dir = tempfile.TemporaryDirectory()
+        self.addCleanup(temp_dir.cleanup)
+        self.base = Path(temp_dir.name).resolve()
+
+        previous_directory = os.getcwd()
+        os.chdir(self.base)
+        self.addCleanup(os.chdir, previous_directory)
+
+
+    def write_config(self, path=None):
+        if path is None:
+            text = ""
+        else:
+            text = f'custom_module_path: "{path}"\n'
+
+        base = self.base / "config.yaml"
+        
+        base.write_text(text, encoding="utf-8")
+
+
+    def test_returns_custom_modules_folder(self):
+        folder = self.base / "custom_modules"
+        folder.mkdir()
+        self.write_config(self.base)
+
+        result = CustomModuleFinder().check_folder_path()
+
+        self.assertEqual(result, folder)
+        self.assertTrue(result.is_dir())
+
+
+    def test_path_pointing_to_custom_modules_uses_parent(self):
+        folder = self.base / "custom_modules"
+        folder.mkdir()
+        self.write_config(folder)
+
+        result = CustomModuleFinder().check_folder_path()
+
+        self.assertEqual(result, folder)
+
+
+    def test_custom_modules_name_is_case_insensitive(self):
+        folder = self.base / "custom_modules"
+        folder.mkdir()
+        self.write_config(self.base / "Custom_Modules")
+
+        result = CustomModuleFinder().check_folder_path()
+
+        self.assertEqual(result, folder)
+
+
+    def test_asks_for_path_when_not_in_config(self):
+        folder = self.base / "custom_modules"
+        folder.mkdir()
+        self.write_config()
+        finder = CustomModuleFinder()
+
+        with patch.object(finder, "ask_custom_modules_path", return_value=str(self.base)) as ask:
+            result = finder.check_folder_path()
+
+        ask.assert_called_once()
+        self.assertEqual(result, folder)
+
+
+    def test_missing_base_directory_raises_error(self):
+        folder = self.base / "does_not_exist"
+        self.write_config(folder)
+
+        with self.assertRaisesRegex(FileNotFoundError, "Location does not exist"):
+            CustomModuleFinder().check_folder_path()
+
+
+    def test_base_is_a_file_raises_error(self):
+        file_path = self.base / "some_file.txt"
+        file_path.write_text("x", encoding="utf-8")
+        self.write_config(file_path)
+
+        with self.assertRaisesRegex(FileNotFoundError, "Location does not exist"):
+            CustomModuleFinder().check_folder_path()
+
+
+    def test_missing_custom_modules_folder_raises_error(self):
+        self.write_config(self.base)
+
+        with self.assertRaisesRegex(FileNotFoundError, "No 'custom_modules' folder"):
+            CustomModuleFinder().check_folder_path()
+
+
+    def test_custom_modules_is_a_file_raises_error(self):
+        custom_modules = self.base / "custom_modules"
+        custom_modules.write_text("x", encoding="utf-8")
+        self.write_config(self.base)
+
+        with self.assertRaisesRegex(FileNotFoundError, "No 'custom_modules' folder"):
+            CustomModuleFinder().check_folder_path()
+
+
+    def test_raises_error_when_config_and_user_provide_no_path(self):
+        self.write_config()
+        finder = CustomModuleFinder()
+
+        with patch.object(finder, "ask_custom_modules_path", return_value=None):
+            with self.assertRaisesRegex(ValueError, "No custom module path was provided"):
+                finder.check_folder_path()
 
 
 
