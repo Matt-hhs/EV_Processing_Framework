@@ -10,13 +10,13 @@ class CustomModuleFinder:
         return data.get(variable_name)
 
 
-    def get_module_config(self, module_path, key):
+    def get_module_config(self, module_path, variable):
         yaml_path = Path(module_path).with_suffix(".yaml")
 
         if not yaml_path.is_file():
             return None
 
-        return self.get_data_from_yaml(str(yaml_path), key)
+        return self.get_data_from_yaml(str(yaml_path), variable)
 
 
     def ask_custom_modules_path(self):
@@ -30,8 +30,16 @@ class CustomModuleFinder:
         if not path:
             path = self.ask_custom_modules_path()
 
+        if not path:
+            raise ValueError("No custom module path was provided! Add \'custom_module_path: <path>\' to config.yaml")
+
         filepath = Path(path).expanduser()
-        base = filepath.parent if filepath.name.lower() == "custom_modules" else filepath
+
+        if filepath.name.lower() == "custom_modules":
+            base = filepath.parent
+        else:
+            base = filepath
+
         base = base.resolve()
 
         if not base.is_dir():
@@ -49,8 +57,7 @@ class CustomModuleFinder:
         allowed_suffixes = self.get_data_from_yaml("config.yaml", "custom_module_suffixes")
 
         if not allowed_suffixes:
-            # TODO
-            print()
+            raise ValueError("No prefixes were provided! Add the following to config.yaml:\n\'allowed_suffixes:\n  - \"<suffix>\"\'")
 
         found = []
         path = self.check_folder_path()
