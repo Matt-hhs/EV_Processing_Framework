@@ -1,6 +1,7 @@
 import unittest
 import tempfile
 import os
+import yaml
 
 from src.Data.Module_discovery import CustomModuleFinder
 
@@ -66,6 +67,13 @@ class TestGetDataFromYaml(unittest.TestCase):
     def test_missing_file_raises_error(self):
         with self.assertRaises(FileNotFoundError):
             CustomModuleFinder().get_data_from_yaml("does_not_exist.yaml", "key")
+
+
+    def test_invalid_yaml_raises_error(self):
+        yaml_path = self.make_config("key: [unclosed")
+
+        with self.assertRaises(yaml.YAMLError):
+            CustomModuleFinder().get_data_from_yaml(yaml_path, "key")
 
 
 if __name__ == '__main__':
