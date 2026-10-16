@@ -7,6 +7,9 @@ class CustomModuleFinder:
         with open(yaml_path, "r", encoding="utf-8") as file:
             data = yaml.safe_load(file) or {}
 
+        if not isinstance(data, dict):
+            raise ValueError(f"Invalid configuration in {yaml_path}\nThis is most likely a cause of invalid syntax or structure")
+
         return data.get(variable_name)
 
 
