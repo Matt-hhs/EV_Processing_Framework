@@ -242,6 +242,177 @@ class TestCheckFolderPath(unittest.TestCase):
                 finder.check_folder_path()
 
 
+class TestFindCustomModules(unittest.TestCase):
+    def setUp(self):
+        temp_dir = tempfile.TemporaryDirectory()
+        self.addCleanup(temp_dir.cleanup)
+        self.base = Path(temp_dir.name).resolve()
+
+        previous_directory = os.getcwd()
+        os.chdir(self.base)
+        self.addCleanup(os.chdir, previous_directory)
+
+
+    def make_custom_modules_folder(self):
+        folder = self.base / "custom_modules"
+        folder.mkdir()
+        return folder
+
+
+    def write_config(self, allowed_suffixes=None):
+        lines = []
+
+        for suffix in allowed_suffixes:
+            lines.append(f'  - "{suffix}"')
+
+        suffixes = "\n".join(lines)
+
+        text = (f'custom_module_path: "{self.base}"\ncustom_module_suffixes:\n{suffixes}')
+        
+        config = self.base / "config.yaml"
+        config.write_text(text, encoding="utf-8")
+
+
+    def test_return_custom_modules(self):
+        folder = self.make_custom_modules_folder()
+        python_file = folder / "testfile.py"
+        second_python_file_location = folder / "testfolder"
+        second_python_file_location.mkdir()
+        second_python_file = second_python_file_location / "testfile2.py"
+        ignore_file = folder / "text.txt"
+
+        python_file.write_text("", encoding="utf-8")
+        second_python_file.write_text("", encoding="utf-8")
+        ignore_file.write_text("", encoding="utf-8")
+
+        self.write_config([".py"])
+
+        result = CustomModuleFinder().find_custom_modules()
+
+        self.assertEqual(result, [python_file, second_python_file])
+
+
+    def test_no_suffixed_files_in_custom_modules_folder(self):
+        folder = self.make_custom_modules_folder()
+        file = folder / "testfile.json"
+        second_file_location = folder / "testfolder"
+        second_file_location.mkdir()
+        second_file = second_file_location / "testfile2.ps1"
+        ignore_file = folder / "text.txt"
+
+        file.write_text("", encoding="utf-8")
+        second_file.write_text("", encoding="utf-8")
+        ignore_file.write_text("", encoding="utf-8")
+
+        self.write_config([".py"])
+
+        result = CustomModuleFinder().find_custom_modules()
+
+        self.assertEqual(result, [])
+
+
+    def test_no_custom_module_suffixes_variable(self):
+        text = (f'custom_module_path: "{self.base}"')
+        
+        config = self.base / "config.yaml"
+        config.write_text(text, encoding="utf-8")
+
+        expected_message = "No prefixes were provided! Add the following to config.yaml:\n\'allowed_suffixes:\n  - \"<suffix>\"\'"
+
+        with self.assertRaisesRegex(ValueError, re.escape(expected_message)):
+            CustomModuleFinder().find_custom_modules()
+
+
+    def test_custom_module_suffixes_is_empty(self):
+        self.write_config([])
+
+        expected_message = "No prefixes were provided! Add the following to config.yaml:\n\'allowed_suffixes:\n  - \"<suffix>\"\'"
+
+        with self.assertRaisesRegex(ValueError, re.escape(expected_message)):
+            CustomModuleFinder().find_custom_modules()
+
+
+    def test_incorrect_yaml_in_config(self):
+        config = self.base / "config.yaml"
+        config.write_text("custom_module_path: [unclosed_bracket", encoding="utf-8")
+
+        with self.assertRaises(yaml.YAMLError):
+            CustomModuleFinder().find_custom_modules()
+
+
+    def test_multiple_allowed_suffixes(self):
+        folder = self.make_custom_modules_folder()
+        python_file = folder / "testfile.py"
+        powershell_file_location = folder / "testfolder"
+        powershell_file_location.mkdir()
+        powershell_file = powershell_file_location / "testfile2.py"
+        ignore_file = folder / "text.txt"
+
+        python_file.write_text("", encoding="utf-8")
+        powershell_file.write_text("", encoding="utf-8")
+        ignore_file.write_text("", encoding="utf-8")
+
+        self.write_config([".py", ".ps1"])
+
+        result = CustomModuleFinder().find_custom_modules()
+
+        self.assertEqual(result, [python_file, powershell_file])
+
+
+    def test_case_insensitive_suffix_matching(self):
+        folder = self.make_custom_modules_folder()
+        python_file = folder / "testfile.PY"
+        second_python_file_location = folder / "testfolder"
+        second_python_file_location.mkdir()
+        second_python_file = second_python_file_location / "testfile2.pY"
+        ignore_file = folder / "text.txt"
+
+        python_file.write_text("", encoding="utf-8")
+        second_python_file.write_text("", encoding="utf-8")
+        ignore_file.write_text("", encoding="utf-8")
+
+        self.write_config([".py"])
+
+        result = CustomModuleFinder().find_custom_modules()
+
+        self.assertEqual(result, [python_file, second_python_file])
+
+
+    def test_ignore_directories_with_allowed_suffix(self):
+        folder = self.make_custom_modules_folder()
+        python_file = folder / "testfile.py"
+        second_python_file_location = folder / "testfolder.py"
+        second_python_file_location.mkdir()
+        second_python_file = second_python_file_location / "testfile2.py"
+        ignore_file = folder / "text.txt"
+
+        python_file.write_text("", encoding="utf-8")
+        second_python_file.write_text("", encoding="utf-8")
+        ignore_file.write_text("", encoding="utf-8")
+
+        self.write_config([".py"])
+
+        result = CustomModuleFinder().find_custom_modules()
+
+        self.assertEqual(result, [python_file, second_python_file])   
+
+
+    def test_results_sorting(self):
+        folder = self.make_custom_modules_folder()
+        self.write_config([".py"])
+
+        zulu = folder / "zulu.py"
+        alpha = folder / "alpha.py"
+        middle = folder / "middle.py"
+
+        zulu.write_text("", encoding="utf-8")
+        alpha.write_text("", encoding="utf-8")
+        middle.write_text("", encoding="utf-8")
+
+        result = CustomModuleFinder().find_custom_modules()
+
+        self.assertEqual(result, [alpha, middle, zulu])
+
 
 if __name__ == '__main__':
     unittest.main()
